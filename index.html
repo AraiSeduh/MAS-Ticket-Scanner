@@ -1,19 +1,17 @@
-```html
 <!DOCTYPE html>
 <html>
-
 <head>
 
   <meta charset="UTF-8">
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1"
   >
 
-  <title>
-    MAS FTJ 2026 — Scanner
-  </title>
+  <title>MAS FTJ 2026 — Scanner</title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
 
   <style>
 
@@ -24,59 +22,105 @@
     body {
       margin: 0;
       padding: 20px;
+      background: #111;
+      color: white;
       font-family: Arial, sans-serif;
-      background: #eeeeee;
-      text-align: center;
     }
 
     .container {
       width: 100%;
       max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 25px;
-      border-radius: 20px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+      margin: 0 auto;
     }
 
     h1 {
-      font-size: 24px;
-      margin-top: 0;
+      text-align: center;
+      margin-bottom: 5px;
     }
 
-    h2 {
-      font-size: 20px;
+    .subtitle {
+      text-align: center;
+      color: #aaa;
+      margin-bottom: 25px;
     }
 
-    video {
+    #reader {
       width: 100%;
-      margin-top: 20px;
+      background: #000;
       border-radius: 15px;
-      background: black;
+      overflow: hidden;
+    }
+
+    #status {
+      margin-top: 20px;
+      padding: 18px;
+      border-radius: 12px;
+      background: #222;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    #result {
       display: none;
+      margin-top: 20px;
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+    }
+
+    #result.success {
+      display: block;
+      background: #123d24;
+      border: 2px solid #2ecc71;
+    }
+
+    #result.error {
+      display: block;
+      background: #421919;
+      border: 2px solid #e74c3c;
+    }
+
+    #result.warning {
+      display: block;
+      background: #443914;
+      border: 2px solid #f1c40f;
+    }
+
+    .result-icon {
+      font-size: 50px;
+      margin-bottom: 10px;
+    }
+
+    .result-title {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .ticket-info {
+      line-height: 1.7;
     }
 
     button {
       width: 100%;
+      margin-top: 20px;
       padding: 15px;
-      margin-top: 15px;
       border: none;
       border-radius: 10px;
       background: #7b1535;
       color: white;
       font-size: 17px;
       font-weight: bold;
+      cursor: pointer;
     }
 
-    #stopButton {
-      background: #555555;
+    button:disabled {
+      opacity: 0.5;
+    }
+
+    #scanAgain {
       display: none;
-    }
-
-    #status {
-      margin-top: 20px;
-      font-weight: bold;
-      line-height: 1.5;
     }
 
   </style>
@@ -87,183 +131,499 @@
 
 <div class="container">
 
-  <h1>
-    MAROONED ACTOR SOCIETY
-  </h1>
+  <h1>MAROONED ACTOR SOCIETY</h1>
 
-  <h2>
-    🎟️ FTJ 2026 SCANNER
-  </h2>
+  <div class="subtitle">
+    FTJ 2026 — Ticket Scanner
+  </div>
 
-  <button
-    id="startButton"
-    onclick="startCamera()"
-  >
-    BUKA KAMERA
-  </button>
-
-  <video
-    id="camera"
-    autoplay
-    playsinline
-  ></video>
-
-  <button
-    id="stopButton"
-    onclick="stopCamera()"
-  >
-    TUTUP KAMERA
-  </button>
+  <div id="reader"></div>
 
   <div id="status">
-    Tekan tombol untuk membuka kamera.
+    Mengaktifkan kamera...
   </div>
+
+  <div id="result">
+
+    <div
+      id="resultIcon"
+      class="result-icon"
+    >
+      ✅
+    </div>
+
+    <div
+      id="resultTitle"
+      class="result-title"
+    >
+      CHECK-IN BERHASIL
+    </div>
+
+    <div
+      id="resultInfo"
+      class="ticket-info"
+    ></div>
+
+  </div>
+
+  <button
+    id="scanAgain"
+    onclick="scanAgain()"
+  >
+    SCAN TIKET BERIKUTNYA
+  </button>
 
 </div>
 
 
 <script>
 
-let stream = null;
+/* ==========================================
+   MASUKKAN URL WEB APP APPS SCRIPT LO DI SINI
+========================================== */
+
+const APPS_SCRIPT_URL =
+  "PASTE_URL_APPS_SCRIPT_LO_DI_SINI";
 
 
-async function startCamera() {
+/* ==========================================
+   VARIABLES
+========================================== */
 
-  const video =
-    document.getElementById(
-      'camera'
+let html5QrCode = null;
+
+let scannerRunning = false;
+
+let processingScan = false;
+
+
+/* ==========================================
+   START SCANNER
+========================================== */
+
+function startScanner() {
+
+  processingScan = false;
+
+  document.getElementById(
+    "scanAgain"
+  ).style.display = "none";
+
+  document.getElementById(
+    "result"
+  ).style.display = "none";
+
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Arahkan kamera ke QR tiket...";
+
+
+  html5QrCode =
+    new Html5Qrcode(
+      "reader"
     );
 
-  const status =
+
+  html5QrCode.start(
+
+    {
+      facingMode: "environment"
+    },
+
+    {
+      fps: 10,
+
+      qrbox: {
+        width: 250,
+        height: 250
+      }
+
+    },
+
+    onScanSuccess,
+
+    onScanFailure
+
+  ).then(function() {
+
+    scannerRunning = true;
+
     document.getElementById(
-      'status'
-    );
+      "status"
+    ).textContent =
+      "📷 Kamera aktif — Scan QR tiket";
 
-  const startButton =
-    document.getElementById(
-      'startButton'
-    );
-
-  const stopButton =
-    document.getElementById(
-      'stopButton'
-    );
-
-
-  startButton.disabled = true;
-
-
-  status.textContent =
-    'Meminta izin kamera...';
-
-
-  try {
-
-    stream =
-      await navigator
-        .mediaDevices
-        .getUserMedia({
-
-          video: {
-            facingMode: {
-              ideal: 'environment'
-            }
-          },
-
-          audio: false
-
-        });
-
-
-    video.srcObject =
-      stream;
-
-    video.style.display =
-      'block';
-
-
-    stopButton.style.display =
-      'block';
-
-
-    status.textContent =
-      '✅ Kamera berhasil dibuka!';
-
-
-  }
-
-  catch (error) {
+  }).catch(function(error) {
 
     console.error(error);
 
+    document.getElementById(
+      "status"
+    ).textContent =
+      "❌ Kamera gagal dibuka.";
 
-    status.textContent =
-      '❌ Kamera gagal dibuka: ' +
-      error.name;
+  });
+
+}
 
 
-    startButton.disabled =
-      false;
+/* ==========================================
+   QR SCAN SUCCESS
+========================================== */
+
+function onScanSuccess(
+  decodedText,
+  decodedResult
+) {
+
+  if (processingScan) {
+    return;
+  }
+
+  processingScan = true;
+
+  console.log(
+    "QR:",
+    decodedText
+  );
+
+
+  stopScanner();
+
+  document.getElementById(
+    "status"
+  ).textContent =
+    "⏳ Memeriksa tiket...";
+
+
+  sendTokenToAppsScript(
+    decodedText
+  );
+
+}
+
+
+/* ==========================================
+   QR SCAN FAILURE
+========================================== */
+
+function onScanFailure(error) {
+
+  // Sengaja dikosongkan.
+  // html5-qrcode akan terus mencari QR.
+
+}
+
+
+/* ==========================================
+   STOP SCANNER
+========================================== */
+
+function stopScanner() {
+
+  if (
+    html5QrCode &&
+    scannerRunning
+  ) {
+
+    html5QrCode
+      .stop()
+      .then(function() {
+
+        scannerRunning = false;
+
+      })
+      .catch(function(error) {
+
+        console.error(
+          "Stop scanner error:",
+          error
+        );
+
+      });
 
   }
 
 }
 
 
-function stopCamera() {
+/* ==========================================
+   SEND TOKEN TO APPS SCRIPT
+========================================== */
 
-  if (stream) {
+function sendTokenToAppsScript(
+  token
+) {
 
-    stream
-      .getTracks()
-      .forEach(
-        function(track) {
+  /*
+    Kita menggunakan JSONP melalui
+    <script> supaya tidak terkena
+    masalah CORS.
+  */
 
-          track.stop();
+  const callbackName =
+    "checkInCallback_" +
+    Date.now();
 
-        }
+
+  window[
+    callbackName
+  ] = function(result) {
+
+    console.log(
+      "Apps Script result:",
+      result
+    );
+
+
+    delete window[
+      callbackName
+    ];
+
+
+    if (script) {
+      script.remove();
+    }
+
+
+    showResult(
+      result
+    );
+
+  };
+
+
+  const script =
+    document.createElement(
+      "script"
+    );
+
+
+  script.src =
+    APPS_SCRIPT_URL +
+    "?action=checkin" +
+    "&token=" +
+    encodeURIComponent(
+      token
+    ) +
+    "&callback=" +
+    callbackName;
+
+
+  script.onerror =
+    function() {
+
+      delete window[
+        callbackName
+      ];
+
+      script.remove();
+
+
+      showResult({
+
+        success: false,
+
+        message:
+          "Gagal terhubung ke server."
+
+      });
+
+    };
+
+
+  document.body.appendChild(
+    script
+  );
+
+}
+
+
+/* ==========================================
+   SHOW RESULT
+========================================== */
+
+function showResult(
+  result
+) {
+
+  const resultBox =
+    document.getElementById(
+      "result"
+    );
+
+  const icon =
+    document.getElementById(
+      "resultIcon"
+    );
+
+  const title =
+    document.getElementById(
+      "resultTitle"
+    );
+
+  const info =
+    document.getElementById(
+      "resultInfo"
+    );
+
+
+  resultBox.className = "";
+
+
+  if (
+    result.success
+  ) {
+
+    resultBox.classList.add(
+      "success"
+    );
+
+    icon.textContent =
+      "✅";
+
+    title.textContent =
+      "CHECK-IN BERHASIL";
+
+    info.innerHTML =
+      "<strong>" +
+      escapeHtml(
+        result.name
+      ) +
+      "</strong><br>" +
+
+      "Ticket ID: " +
+      escapeHtml(
+        result.ticketId
+      ) +
+      "<br>" +
+
+      "Tipe: " +
+      escapeHtml(
+        result.ticketType
       );
 
-    stream = null;
+  }
+
+  else if (
+    result.alreadyCheckedIn
+  ) {
+
+    resultBox.classList.add(
+      "warning"
+    );
+
+    icon.textContent =
+      "⚠️";
+
+    title.textContent =
+      "TIKET SUDAH DIGUNAKAN";
+
+    info.innerHTML =
+      "<strong>" +
+      escapeHtml(
+        result.name
+      ) +
+      "</strong><br>" +
+
+      "Ticket ID: " +
+      escapeHtml(
+        result.ticketId
+      );
+
+  }
+
+  else {
+
+    resultBox.classList.add(
+      "error"
+    );
+
+    icon.textContent =
+      "❌";
+
+    title.textContent =
+      "TIKET TIDAK VALID";
+
+    info.textContent =
+      result.message ||
+      "Tiket tidak ditemukan.";
 
   }
 
 
-  document
-    .getElementById(
-      'camera'
-    )
-    .style
-    .display = 'none';
+  resultBox.style.display =
+    "block";
 
 
-  document
-    .getElementById(
-      'stopButton'
-    )
-    .style
-    .display = 'none';
+  document.getElementById(
+    "scanAgain"
+  ).style.display =
+    "block";
 
 
-  document
-    .getElementById(
-      'startButton'
-    )
-    .disabled = false;
-
-
-  document
-    .getElementById(
-      'status'
-    )
-    .textContent =
-      'Kamera ditutup.';
+  document.getElementById(
+    "status"
+  ).textContent =
+    "Scan selesai.";
 
 }
+
+
+/* ==========================================
+   SCAN AGAIN
+========================================== */
+
+function scanAgain() {
+
+  document.getElementById(
+    "result"
+  ).style.display =
+    "none";
+
+
+  document.getElementById(
+    "scanAgain"
+  ).style.display =
+    "none";
+
+
+  startScanner();
+
+}
+
+
+/* ==========================================
+   HTML ESCAPE
+========================================== */
+
+function escapeHtml(
+  text
+) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    text == null
+      ? ""
+      : String(text);
+
+  return div.innerHTML;
+
+}
+
+
+/* ==========================================
+   START
+========================================== */
+
+startScanner();
 
 </script>
 
 </body>
-
 </html>
-```
