@@ -272,10 +272,27 @@ function startScanner() {
    QR SCAN SUCCESS
 ========================================== */
 
-function onScanSuccess(
-  decodedText,
-  decodedResult
-) {
+function onScanSuccess(decodedText, decodedResult) {
+
+  if (processingScan) {
+    return;
+  }
+
+  processingScan = true;
+
+  alert(
+    "QR TERBACA!\n\n" +
+    "Isi QR:\n" +
+    decodedText
+  );
+
+  stopScanner();
+
+  document.getElementById("status").textContent =
+    "QR berhasil dibaca. Menghubungkan ke server...";
+
+  sendTokenToAppsScript(decodedText);
+}
 
   if (processingScan) {
     return;
