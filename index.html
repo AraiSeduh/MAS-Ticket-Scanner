@@ -1,20 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>MAS FTJ 2026 — Scanner</title>
 
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
-
     * {
       box-sizing: border-box;
     }
@@ -25,95 +19,134 @@
       background: #111;
       color: white;
       font-family: Arial, sans-serif;
+      min-height: 100vh;
     }
 
     .container {
       width: 100%;
       max-width: 500px;
-      margin: auto;
+      margin: 0 auto;
+      text-align: center;
     }
 
     h1 {
-      text-align: center;
+      margin-top: 10px;
       margin-bottom: 5px;
+      font-size: 24px;
     }
 
     .subtitle {
-      text-align: center;
       color: #aaa;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     #reader {
       width: 100%;
+      max-width: 420px;
+      margin: 0 auto 20px;
       background: #000;
       border-radius: 15px;
       overflow: hidden;
     }
 
-    #status {
-      margin-top: 18px;
+    button {
+      width: 100%;
+      max-width: 420px;
       padding: 15px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #startButton {
+      background: white;
+      color: #111;
+    }
+
+    #scanAgainButton {
+      background: #7b1535;
+      color: white;
+    }
+
+    #status {
+      margin: 15px auto;
+      max-width: 420px;
+      padding: 12px;
       border-radius: 10px;
       background: #222;
-      text-align: center;
-      font-weight: bold;
+      color: #ddd;
+      font-size: 14px;
     }
 
     #result {
       display: none;
-      margin-top: 18px;
-      padding: 25px;
+      max-width: 420px;
+      margin: 20px auto;
+      padding: 25px 20px;
       border-radius: 15px;
-      text-align: center;
+      background: #222;
     }
 
-    #result.success {
-      display: block;
-      background: #123d24;
-      border: 2px solid #2ecc71;
+    #resultIcon {
+      font-size: 55px;
+      margin-bottom: 10px;
     }
 
-    #result.error {
-      display: block;
-      background: #421919;
-      border: 2px solid #e74c3c;
-    }
-
-    #result.warning {
-      display: block;
-      background: #443914;
-      border: 2px solid #f1c40f;
-    }
-
-    .result-icon {
-      font-size: 50px;
-    }
-
-    .result-title {
+    #resultTitle {
       font-size: 25px;
       font-weight: bold;
-      margin: 10px 0;
+      margin-bottom: 20px;
     }
 
-    button {
-      width: 100%;
-      margin-top: 18px;
-      padding: 15px;
-      border: none;
+    .success {
+      color: #4ade80;
+    }
+
+    .warning {
+      color: #facc15;
+    }
+
+    .error {
+      color: #f87171;
+    }
+
+    .ticket-info {
+      text-align: left;
+      background: #151515;
       border-radius: 10px;
-      background: #7b1535;
-      color: white;
-      font-size: 17px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: #999;
+    }
+
+    .info-value {
       font-weight: bold;
+      text-align: right;
+      word-break: break-word;
     }
 
-    #scanAgain {
-      display: none;
+    .hidden {
+      display: none !important;
     }
-
   </style>
-
 </head>
 
 <body>
@@ -121,138 +154,101 @@
 <div class="container">
 
   <h1>MAROONED ACTOR SOCIETY</h1>
+  <div class="subtitle">FTJ 2026 — Ticket Scanner</div>
 
-  <div class="subtitle">
-    FTJ 2026 — Ticket Scanner
+  <div id="scannerSection">
+
+    <div id="reader"></div>
+
+    <button id="startButton" onclick="startScanner()">
+      📷 BUKA KAMERA
+    </button>
+
+    <div id="status">
+      Scanner siap.
+    </div>
+
   </div>
-
-  <div id="reader"></div>
-
-  <div id="status">
-    Scanner siap.
-  </div>
-
-  <button
-    id="startButton"
-    onclick="startScanner()"
-  >
-    📷 BUKA KAMERA
-  </button>
 
   <div id="result">
 
-    <div
-      id="resultIcon"
-      class="result-icon"
-    ></div>
+    <div id="resultIcon"></div>
 
-    <div
-      id="resultTitle"
-      class="result-title"
-    ></div>
+    <div id="resultTitle"></div>
 
-    <div id="resultInfo"></div>
+    <div class="ticket-info">
+
+      <div class="info-row">
+        <span class="info-label">Ticket ID</span>
+        <span class="info-value" id="ticketId">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Nama</span>
+        <span class="info-value" id="ticketName">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Jenis Tiket</span>
+        <span class="info-value" id="ticketType">-</span>
+      </div>
+
+      <div class="info-row">
+        <span class="info-label">Check-in</span>
+        <span class="info-value" id="checkInTime">-</span>
+      </div>
+
+    </div>
+
+    <button id="scanAgainButton" onclick="scanAgain()">
+      📷 SCAN TIKET BERIKUTNYA
+    </button>
 
   </div>
 
-  <button
-    id="scanAgain"
-    onclick="scanAgain()"
-  >
-    SCAN TIKET BERIKUTNYA
-  </button>
-
 </div>
 
-
 <script>
-
-/* =========================================
-   APPS SCRIPT URL
-========================================= */
 
 const APPS_SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbzWD-Ei55rspe66t7yZdTSuW0TygdqvhBm_z8fUFzK6BskXMByU0Md6Us5emQ8eHoYPmQ/exec";
 
-
-/* =========================================
-   VARIABLES
-========================================= */
-
 let html5QrCode = null;
-
-let scannerRunning = false;
-
 let processingScan = false;
 
 
-/* =========================================
+/* =========================
    START SCANNER
-========================================= */
+========================= */
 
 function startScanner() {
 
-  const status =
-    document.getElementById("status");
+  if (processingScan) {
+    return;
+  }
 
-  const startButton =
-    document.getElementById("startButton");
+  if (typeof Html5Qrcode === "undefined") {
 
-
-  status.textContent =
-    "⏳ Memuat scanner...";
-
-  startButton.disabled = true;
-
-
-  /* CEK LIBRARY */
-
-  if (
-    typeof Html5Qrcode ===
-    "undefined"
-  ) {
-
-    status.textContent =
+    document.getElementById("status").textContent =
       "❌ Library scanner gagal dimuat.";
 
-    startButton.disabled = false;
-
     return;
-
   }
 
+  if (!window.isSecureContext) {
 
-  /* CEK HTTPS */
-
-  if (
-    location.protocol !==
-    "https:" &&
-    location.hostname !==
-    "localhost"
-  ) {
-
-    status.textContent =
+    document.getElementById("status").textContent =
       "❌ Scanner harus dibuka melalui HTTPS.";
 
-    startButton.disabled = false;
-
     return;
-
   }
 
+  document.getElementById("status").textContent =
+    "Mengaktifkan kamera...";
 
-  processingScan = false;
+  document.getElementById("startButton").disabled = true;
 
-
-  html5QrCode =
-    new Html5Qrcode(
-      "reader"
-    );
-
-
-  status.textContent =
-    "📷 Meminta akses kamera...";
-
+  html5QrCode = new Html5Qrcode("reader");
 
   html5QrCode.start(
 
@@ -262,62 +258,41 @@ function startScanner() {
 
     {
       fps: 10,
-
       qrbox: {
         width: 250,
         height: 250
       },
-
       aspectRatio: 1.0
-
     },
 
     onScanSuccess,
 
     onScanFailure
 
-  )
+  ).then(function() {
 
-  .then(function() {
-
-    scannerRunning = true;
-
-    startButton.style.display =
-      "none";
-
-    status.textContent =
+    document.getElementById("status").textContent =
       "📷 Kamera aktif — arahkan ke QR tiket.";
 
-  })
+  }).catch(function(error) {
 
-  .catch(function(error) {
+    console.error(error);
 
-    console.error(
-      "Camera error:",
-      error
-    );
+    document.getElementById("status").textContent =
+      "❌ Kamera gagal dibuka: " + error;
 
-    scannerRunning = false;
-
-    startButton.disabled = false;
-
-    status.textContent =
-      "❌ Kamera gagal dibuka: " +
-      error;
+    document.getElementById("startButton").disabled = false;
 
   });
 
 }
 
 
-/* =========================================
-   QR SUCCESS
-========================================= */
+/* =========================
+   QR SCAN SUCCESS
+========================= */
 
-function onScanSuccess(
-  decodedText,
-  decodedResult
-) {
+function onScanSuccess(decodedText, decodedResult) {
 
   if (processingScan) {
     return;
@@ -325,111 +300,121 @@ function onScanSuccess(
 
   processingScan = true;
 
+  document.getElementById("status").textContent =
+    "Memverifikasi tiket...";
 
-  alert(
-    "QR TERBACA!\n\n" +
-    decodedText
-  );
+  stopScanner()
+    .then(function() {
 
+      sendTokenToAppsScript(decodedText);
 
-  stopScanner();
+    })
+    .catch(function() {
 
+      sendTokenToAppsScript(decodedText);
 
-  document.getElementById(
-    "status"
-  ).textContent =
-    "⏳ Memeriksa tiket...";
-
-
-  sendTokenToAppsScript(
-    decodedText
-  );
+    });
 
 }
 
 
-/* =========================================
-   QR FAILURE
-========================================= */
+/* =========================
+   SCAN FAILURE
+========================= */
 
 function onScanFailure(error) {
-
-  // Normal ketika kamera sedang mencari QR.
-
+  // Sengaja kosong.
+  // QR belum terbaca bukan error.
 }
 
 
-/* =========================================
-   STOP
-========================================= */
+/* =========================
+   STOP CAMERA
+========================= */
 
 function stopScanner() {
 
-  if (
-    html5QrCode &&
-    scannerRunning
-  ) {
-
-    html5QrCode
-      .stop()
-      .then(function() {
-
-        scannerRunning = false;
-
-      })
-      .catch(function(error) {
-
-        console.error(
-          "Stop error:",
-          error
-        );
-
-      });
-
+  if (!html5QrCode) {
+    return Promise.resolve();
   }
+
+  return html5QrCode.stop()
+    .then(function() {
+
+      html5QrCode.clear();
+      html5QrCode = null;
+
+    })
+    .catch(function(error) {
+
+      console.warn("Scanner stop:", error);
+
+      html5QrCode = null;
+
+    });
 
 }
 
 
-/* =========================================
-   SEND TO APPS SCRIPT
-========================================= */
+/* =========================
+   SEND TOKEN TO APPS SCRIPT
+========================= */
 
-function sendTokenToAppsScript(
-  token
-) {
+function sendTokenToAppsScript(token) {
 
   const callbackName =
-    "checkInCallback_" +
-    Date.now();
+    "checkInCallback_" + Date.now();
+
+  const script =
+    document.createElement("script");
+
+  const timeout =
+    setTimeout(function() {
+
+      cleanup();
+
+      showError(
+        "GAGAL TERHUBUNG",
+        "Scanner tidak dapat menghubungi server."
+      );
+
+    }, 10000);
 
 
-  let script = null;
+  window[callbackName] = function(result) {
 
+    clearTimeout(timeout);
 
-  window[
-    callbackName
-  ] = function(result) {
+    cleanup();
 
-    delete window[
-      callbackName
-    ];
-
-
-    if (script) {
-      script.remove();
-    }
-
-
-    showResult(result);
+    handleServerResult(result);
 
   };
 
 
-  script =
-    document.createElement(
-      "script"
+  function cleanup() {
+
+    if (script.parentNode) {
+      script.parentNode.removeChild(script);
+    }
+
+    delete window[callbackName];
+
+  }
+
+
+  script.onerror = function() {
+
+    clearTimeout(timeout);
+
+    cleanup();
+
+    showError(
+      "GAGAL TERHUBUNG",
+      "Server tidak dapat dihubungi."
     );
+
+  };
 
 
   script.src =
@@ -438,201 +423,223 @@ function sendTokenToAppsScript(
     "&token=" +
     encodeURIComponent(token) +
     "&callback=" +
-    callbackName;
+    encodeURIComponent(callbackName) +
+    "&_=" +
+    Date.now();
 
 
-  script.onerror =
-    function() {
+  document.body.appendChild(script);
 
-      delete window[
-        callbackName
-      ];
-
-      script.remove();
+}
 
 
-      showResult({
+/* =========================
+   SERVER RESULT
+========================= */
 
-        success: false,
+function handleServerResult(result) {
 
-        message:
-          "Gagal terhubung ke server."
+  if (!result) {
 
-      });
+    showError(
+      "GAGAL TERHUBUNG",
+      "Server memberikan respons kosong."
+    );
 
-    };
+    return;
+  }
 
 
-  document.body.appendChild(
-    script
+  if (result.success) {
+
+    showSuccess(result);
+
+    return;
+  }
+
+
+  if (result.alreadyCheckedIn) {
+
+    showWarning(result);
+
+    return;
+  }
+
+
+  if (result.notFound) {
+
+    showError(
+      "TIKET TIDAK VALID",
+      result.message || "QR tidak terdaftar."
+    );
+
+    return;
+  }
+
+
+  showError(
+    "GAGAL MEMPROSES",
+    result.message || "Terjadi kesalahan."
   );
 
 }
 
 
-/* =========================================
-   SHOW RESULT
-========================================= */
+/* =========================
+   SUCCESS
+========================= */
 
-function showResult(result) {
+function showSuccess(result) {
 
-  const resultBox =
-    document.getElementById(
-      "result"
-    );
+  showResultScreen();
 
-  const icon =
-    document.getElementById(
-      "resultIcon"
-    );
+  document.getElementById("resultIcon").textContent =
+    "✅";
 
-  const title =
-    document.getElementById(
-      "resultTitle"
-    );
+  document.getElementById("resultTitle").textContent =
+    "TIKET TERKONFIRMASI";
 
-  const info =
-    document.getElementById(
-      "resultInfo"
-    );
+  document.getElementById("resultTitle").className =
+    "success";
 
-
-  resultBox.className = "";
-
-
-  if (result.success) {
-
-    resultBox.classList.add(
-      "success"
-    );
-
-    icon.textContent = "✅";
-
-    title.textContent =
-      "CHECK-IN BERHASIL";
-
-    info.innerHTML =
-      "<strong>" +
-      escapeHtml(result.name) +
-      "</strong><br>" +
-      "Ticket ID: " +
-      escapeHtml(result.ticketId) +
-      "<br>" +
-      "Tipe: " +
-      escapeHtml(result.ticketType);
-
-  }
-
-  else if (
-    result.alreadyCheckedIn
-  ) {
-
-    resultBox.classList.add(
-      "warning"
-    );
-
-    icon.textContent = "⚠️";
-
-    title.textContent =
-      "TIKET SUDAH DIGUNAKAN";
-
-    info.innerHTML =
-      "<strong>" +
-      escapeHtml(result.name) +
-      "</strong><br>" +
-      "Ticket ID: " +
-      escapeHtml(result.ticketId);
-
-  }
-
-  else {
-
-    resultBox.classList.add(
-      "error"
-    );
-
-    icon.textContent = "❌";
-
-    title.textContent =
-      "TIKET TIDAK VALID";
-
-    info.textContent =
-      result.message ||
-      "Tiket tidak ditemukan.";
-
-  }
-
-
-  resultBox.style.display =
-    "block";
-
-
-  document.getElementById(
-    "scanAgain"
-  ).style.display =
-    "block";
-
-
-  document.getElementById(
-    "status"
-  ).textContent =
-    "Scan selesai.";
+  fillTicketInfo(result);
 
 }
 
 
-/* =========================================
+/* =========================
+   ALREADY CHECKED IN
+========================= */
+
+function showWarning(result) {
+
+  showResultScreen();
+
+  document.getElementById("resultIcon").textContent =
+    "⚠️";
+
+  document.getElementById("resultTitle").textContent =
+    "TIKET SUDAH DIGUNAKAN";
+
+  document.getElementById("resultTitle").className =
+    "warning";
+
+  fillTicketInfo(result);
+
+}
+
+
+/* =========================
+   ERROR
+========================= */
+
+function showError(title, message) {
+
+  showResultScreen();
+
+  document.getElementById("resultIcon").textContent =
+    "❌";
+
+  document.getElementById("resultTitle").textContent =
+    title;
+
+  document.getElementById("resultTitle").className =
+    "error";
+
+  document.getElementById("ticketId").textContent =
+    "-";
+
+  document.getElementById("ticketName").textContent =
+    message;
+
+  document.getElementById("ticketType").textContent =
+    "-";
+
+  document.getElementById("checkInTime").textContent =
+    "-";
+
+}
+
+
+/* =========================
+   FILL TICKET INFO
+========================= */
+
+function fillTicketInfo(result) {
+
+  document.getElementById("ticketId").textContent =
+    result.ticketId || "-";
+
+  document.getElementById("ticketName").textContent =
+    result.name || "-";
+
+  document.getElementById("ticketType").textContent =
+    result.ticketType || "-";
+
+
+  if (result.checkInTime) {
+
+    const date =
+      new Date(result.checkInTime);
+
+    if (!isNaN(date.getTime())) {
+
+      document.getElementById("checkInTime").textContent =
+        date.toLocaleString("id-ID");
+
+    } else {
+
+      document.getElementById("checkInTime").textContent =
+        result.checkInTime;
+
+    }
+
+  } else {
+
+    document.getElementById("checkInTime").textContent =
+      "-";
+
+  }
+
+}
+
+
+/* =========================
+   SHOW RESULT
+========================= */
+
+function showResultScreen() {
+
+  document.getElementById("scannerSection")
+    .classList.add("hidden");
+
+  document.getElementById("result")
+    .style.display = "block";
+
+}
+
+
+/* =========================
    SCAN AGAIN
-========================================= */
+========================= */
 
 function scanAgain() {
 
-  document.getElementById(
-    "result"
-  ).style.display =
-    "none";
+  processingScan = false;
 
+  document.getElementById("result")
+    .style.display = "none";
 
-  document.getElementById(
-    "scanAgain"
-  ).style.display =
-    "none";
+  document.getElementById("scannerSection")
+    .classList.remove("hidden");
 
+  document.getElementById("status").textContent =
+    "Scanner siap.";
 
-  document.getElementById(
-    "startButton"
-  ).style.display =
-    "block";
-
-
-  document.getElementById(
-    "startButton"
-  ).disabled =
+  document.getElementById("startButton").disabled =
     false;
 
-
   startScanner();
-
-}
-
-
-/* =========================================
-   ESCAPE HTML
-========================================= */
-
-function escapeHtml(text) {
-
-  const div =
-    document.createElement(
-      "div"
-    );
-
-  div.textContent =
-    text == null
-      ? ""
-      : String(text);
-
-  return div.innerHTML;
 
 }
 
