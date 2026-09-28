@@ -30,7 +30,7 @@
     .container {
       width: 100%;
       max-width: 500px;
-      margin: 0 auto;
+      margin: auto;
     }
 
     h1 {
@@ -41,7 +41,7 @@
     .subtitle {
       text-align: center;
       color: #aaa;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
     }
 
     #reader {
@@ -52,18 +52,17 @@
     }
 
     #status {
-      margin-top: 20px;
-      padding: 18px;
-      border-radius: 12px;
+      margin-top: 18px;
+      padding: 15px;
+      border-radius: 10px;
       background: #222;
       text-align: center;
       font-weight: bold;
-      font-size: 18px;
     }
 
     #result {
       display: none;
-      margin-top: 20px;
+      margin-top: 18px;
       padding: 25px;
       border-radius: 15px;
       text-align: center;
@@ -89,22 +88,17 @@
 
     .result-icon {
       font-size: 50px;
-      margin-bottom: 10px;
     }
 
     .result-title {
-      font-size: 26px;
+      font-size: 25px;
       font-weight: bold;
-      margin-bottom: 15px;
-    }
-
-    .ticket-info {
-      line-height: 1.7;
+      margin: 10px 0;
     }
 
     button {
       width: 100%;
-      margin-top: 20px;
+      margin-top: 18px;
       padding: 15px;
       border: none;
       border-radius: 10px;
@@ -112,11 +106,6 @@
       color: white;
       font-size: 17px;
       font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:disabled {
-      opacity: 0.5;
     }
 
     #scanAgain {
@@ -140,29 +129,29 @@
   <div id="reader"></div>
 
   <div id="status">
-    Mengaktifkan kamera...
+    Scanner siap.
   </div>
+
+  <button
+    id="startButton"
+    onclick="startScanner()"
+  >
+    📷 BUKA KAMERA
+  </button>
 
   <div id="result">
 
     <div
       id="resultIcon"
       class="result-icon"
-    >
-      ✅
-    </div>
+    ></div>
 
     <div
       id="resultTitle"
       class="result-title"
-    >
-      CHECK-IN BERHASIL
-    </div>
-
-    <div
-      id="resultInfo"
-      class="ticket-info"
     ></div>
+
+    <div id="resultInfo"></div>
 
   </div>
 
@@ -178,17 +167,17 @@
 
 <script>
 
-/* ==========================================
-   MASUKKAN URL WEB APP APPS SCRIPT LO DI SINI
-========================================== */
+/* =========================================
+   APPS SCRIPT URL
+========================================= */
 
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzWD-Ei55rspe66t7yZdTSuW0TygdqvhBm_z8fUFzK6BskXMByU0Md6Us5emQ8eHoYPmQ/exec";
+  "PASTE_URL_APPS_SCRIPT_LO_DI_SINI";
 
 
-/* ==========================================
+/* =========================================
    VARIABLES
-========================================== */
+========================================= */
 
 let html5QrCode = null;
 
@@ -197,32 +186,72 @@ let scannerRunning = false;
 let processingScan = false;
 
 
-/* ==========================================
+/* =========================================
    START SCANNER
-========================================== */
+========================================= */
 
 function startScanner() {
 
+  const status =
+    document.getElementById("status");
+
+  const startButton =
+    document.getElementById("startButton");
+
+
+  status.textContent =
+    "⏳ Memuat scanner...";
+
+  startButton.disabled = true;
+
+
+  /* CEK LIBRARY */
+
+  if (
+    typeof Html5Qrcode ===
+    "undefined"
+  ) {
+
+    status.textContent =
+      "❌ Library scanner gagal dimuat.";
+
+    startButton.disabled = false;
+
+    return;
+
+  }
+
+
+  /* CEK HTTPS */
+
+  if (
+    location.protocol !==
+    "https:" &&
+    location.hostname !==
+    "localhost"
+  ) {
+
+    status.textContent =
+      "❌ Scanner harus dibuka melalui HTTPS.";
+
+    startButton.disabled = false;
+
+    return;
+
+  }
+
+
   processingScan = false;
-
-  document.getElementById(
-    "scanAgain"
-  ).style.display = "none";
-
-  document.getElementById(
-    "result"
-  ).style.display = "none";
-
-  document.getElementById(
-    "status"
-  ).textContent =
-    "Arahkan kamera ke QR tiket...";
 
 
   html5QrCode =
     new Html5Qrcode(
       "reader"
     );
+
+
+  status.textContent =
+    "📷 Meminta akses kamera...";
 
 
   html5QrCode.start(
@@ -237,7 +266,9 @@ function startScanner() {
       qrbox: {
         width: 250,
         height: 250
-      }
+      },
+
+      aspectRatio: 1.0
 
     },
 
@@ -245,68 +276,64 @@ function startScanner() {
 
     onScanFailure
 
-  ).then(function() {
+  )
+
+  .then(function() {
 
     scannerRunning = true;
 
-    document.getElementById(
-      "status"
-    ).textContent =
-      "📷 Kamera aktif — Scan QR tiket";
+    startButton.style.display =
+      "none";
 
-  }).catch(function(error) {
+    status.textContent =
+      "📷 Kamera aktif — arahkan ke QR tiket.";
 
-    console.error(error);
+  })
 
-    document.getElementById(
-      "status"
-    ).textContent =
-      "❌ Kamera gagal dibuka.";
+  .catch(function(error) {
+
+    console.error(
+      "Camera error:",
+      error
+    );
+
+    scannerRunning = false;
+
+    startButton.disabled = false;
+
+    status.textContent =
+      "❌ Kamera gagal dibuka: " +
+      error;
 
   });
 
 }
 
 
-/* ==========================================
-   QR SCAN SUCCESS
-========================================== */
+/* =========================================
+   QR SUCCESS
+========================================= */
 
-function onScanSuccess(decodedText, decodedResult) {
+function onScanSuccess(
+  decodedText,
+  decodedResult
+) {
 
   if (processingScan) {
     return;
   }
 
   processingScan = true;
+
 
   alert(
     "QR TERBACA!\n\n" +
-    "Isi QR:\n" +
-    decodedText
-  );
-
-  stopScanner();
-
-  document.getElementById("status").textContent =
-    "QR berhasil dibaca. Menghubungkan ke server...";
-
-  sendTokenToAppsScript(decodedText);
-}
-
-  if (processingScan) {
-    return;
-  }
-
-  processingScan = true;
-
-  console.log(
-    "QR:",
     decodedText
   );
 
 
   stopScanner();
+
 
   document.getElementById(
     "status"
@@ -321,21 +348,20 @@ function onScanSuccess(decodedText, decodedResult) {
 }
 
 
-/* ==========================================
-   QR SCAN FAILURE
-========================================== */
+/* =========================================
+   QR FAILURE
+========================================= */
 
 function onScanFailure(error) {
 
-  // Sengaja dikosongkan.
-  // html5-qrcode akan terus mencari QR.
+  // Normal ketika kamera sedang mencari QR.
 
 }
 
 
-/* ==========================================
-   STOP SCANNER
-========================================== */
+/* =========================================
+   STOP
+========================================= */
 
 function stopScanner() {
 
@@ -354,7 +380,7 @@ function stopScanner() {
       .catch(function(error) {
 
         console.error(
-          "Stop scanner error:",
+          "Stop error:",
           error
         );
 
@@ -365,34 +391,25 @@ function stopScanner() {
 }
 
 
-/* ==========================================
-   SEND TOKEN TO APPS SCRIPT
-========================================== */
+/* =========================================
+   SEND TO APPS SCRIPT
+========================================= */
 
 function sendTokenToAppsScript(
   token
 ) {
-
-  /*
-    Kita menggunakan JSONP melalui
-    <script> supaya tidak terkena
-    masalah CORS.
-  */
 
   const callbackName =
     "checkInCallback_" +
     Date.now();
 
 
+  let script = null;
+
+
   window[
     callbackName
   ] = function(result) {
-
-    console.log(
-      "Apps Script result:",
-      result
-    );
-
 
     delete window[
       callbackName
@@ -404,14 +421,12 @@ function sendTokenToAppsScript(
     }
 
 
-    showResult(
-      result
-    );
+    showResult(result);
 
   };
 
 
-  const script =
+  script =
     document.createElement(
       "script"
     );
@@ -421,9 +436,7 @@ function sendTokenToAppsScript(
     APPS_SCRIPT_URL +
     "?action=checkin" +
     "&token=" +
-    encodeURIComponent(
-      token
-    ) +
+    encodeURIComponent(token) +
     "&callback=" +
     callbackName;
 
@@ -457,13 +470,11 @@ function sendTokenToAppsScript(
 }
 
 
-/* ==========================================
+/* =========================================
    SHOW RESULT
-========================================== */
+========================================= */
 
-function showResult(
-  result
-) {
+function showResult(result) {
 
   const resultBox =
     document.getElementById(
@@ -489,37 +500,26 @@ function showResult(
   resultBox.className = "";
 
 
-  if (
-    result.success
-  ) {
+  if (result.success) {
 
     resultBox.classList.add(
       "success"
     );
 
-    icon.textContent =
-      "✅";
+    icon.textContent = "✅";
 
     title.textContent =
       "CHECK-IN BERHASIL";
 
     info.innerHTML =
       "<strong>" +
-      escapeHtml(
-        result.name
-      ) +
+      escapeHtml(result.name) +
       "</strong><br>" +
-
       "Ticket ID: " +
-      escapeHtml(
-        result.ticketId
-      ) +
+      escapeHtml(result.ticketId) +
       "<br>" +
-
       "Tipe: " +
-      escapeHtml(
-        result.ticketType
-      );
+      escapeHtml(result.ticketType);
 
   }
 
@@ -531,23 +531,17 @@ function showResult(
       "warning"
     );
 
-    icon.textContent =
-      "⚠️";
+    icon.textContent = "⚠️";
 
     title.textContent =
       "TIKET SUDAH DIGUNAKAN";
 
     info.innerHTML =
       "<strong>" +
-      escapeHtml(
-        result.name
-      ) +
+      escapeHtml(result.name) +
       "</strong><br>" +
-
       "Ticket ID: " +
-      escapeHtml(
-        result.ticketId
-      );
+      escapeHtml(result.ticketId);
 
   }
 
@@ -557,8 +551,7 @@ function showResult(
       "error"
     );
 
-    icon.textContent =
-      "❌";
+    icon.textContent = "❌";
 
     title.textContent =
       "TIKET TIDAK VALID";
@@ -588,9 +581,9 @@ function showResult(
 }
 
 
-/* ==========================================
+/* =========================================
    SCAN AGAIN
-========================================== */
+========================================= */
 
 function scanAgain() {
 
@@ -606,18 +599,28 @@ function scanAgain() {
     "none";
 
 
+  document.getElementById(
+    "startButton"
+  ).style.display =
+    "block";
+
+
+  document.getElementById(
+    "startButton"
+  ).disabled =
+    false;
+
+
   startScanner();
 
 }
 
 
-/* ==========================================
-   HTML ESCAPE
-========================================== */
+/* =========================================
+   ESCAPE HTML
+========================================= */
 
-function escapeHtml(
-  text
-) {
+function escapeHtml(text) {
 
   const div =
     document.createElement(
@@ -632,13 +635,6 @@ function escapeHtml(
   return div.innerHTML;
 
 }
-
-
-/* ==========================================
-   START
-========================================== */
-
-startScanner();
 
 </script>
 
