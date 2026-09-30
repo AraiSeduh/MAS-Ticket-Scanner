@@ -1,105 +1,91 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>MAS FTJ 2026 — Scanner</title>
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>SHIFT 4 — Scanner</title>
 
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      padding: 20px;
+      min-height: 100vh;
       background: #111;
       color: white;
       font-family: Arial, sans-serif;
-      min-height: 100vh;
+      padding: 25px 15px;
     }
 
     .container {
       width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-      text-align: center;
+      max-width: 480px;
+      margin: auto;
     }
 
     h1 {
-      margin-top: 10px;
+      text-align: center;
+      letter-spacing: 3px;
       margin-bottom: 5px;
-      font-size: 24px;
     }
 
     .subtitle {
+      text-align: center;
       color: #aaa;
       margin-bottom: 25px;
     }
 
     #reader {
       width: 100%;
-      max-width: 420px;
-      margin: 0 auto 20px;
-      background: #000;
-      border-radius: 15px;
       overflow: hidden;
-    }
-
-    button {
-      width: 100%;
-      max-width: 420px;
-      padding: 15px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
+      border-radius: 15px;
+      background: #000;
     }
 
     #startButton {
+      width: 100%;
+      margin-top: 15px;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
       background: white;
-      color: #111;
-    }
-
-    #scanAgainButton {
-      background: #7b1535;
-      color: white;
+      color: black;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
     }
 
     #status {
-      margin: 15px auto;
-      max-width: 420px;
-      padding: 12px;
-      border-radius: 10px;
-      background: #222;
-      color: #ddd;
-      font-size: 14px;
+      text-align: center;
+      color: #aaa;
+      margin-top: 15px;
     }
-
-    /* =========================
-       PROCESSING SCREEN
-    ========================= */
 
     #processing {
       display: none;
-      max-width: 420px;
-      margin: 50px auto;
       text-align: center;
+      padding: 50px 20px;
     }
 
     .spinner {
-      width: 50px;
-      height: 50px;
-      margin: 0 auto 25px;
-      border: 4px solid #333;
-      border-top: 4px solid white;
+      width: 45px;
+      height: 45px;
+      border: 4px solid #555;
+      border-top-color: white;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
     }
 
     @keyframes spin {
@@ -108,66 +94,35 @@
       }
     }
 
-    .processing-title {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .processing-subtitle {
-      color: #999;
-      font-size: 14px;
-    }
-
-    /* =========================
-       RESULT
-    ========================= */
-
     #result {
       display: none;
-      max-width: 420px;
-      margin: 20px auto;
-      padding: 25px 20px;
-      border-radius: 15px;
-      background: #222;
+      text-align: center;
+      padding-top: 20px;
     }
 
-    #resultIcon {
+    .result-icon {
       font-size: 55px;
       margin-bottom: 10px;
     }
 
-    #resultTitle {
+    .result-title {
       font-size: 25px;
       font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    .success {
-      color: #4ade80;
-    }
-
-    .warning {
-      color: #facc15;
-    }
-
-    .error {
-      color: #f87171;
+      margin-bottom: 25px;
     }
 
     .ticket-info {
       text-align: left;
-      background: #151515;
-      border-radius: 10px;
-      padding: 15px;
-      margin-top: 15px;
+      background: #1c1c1c;
+      border-radius: 12px;
+      overflow: hidden;
     }
 
     .info-row {
       display: flex;
       justify-content: space-between;
       gap: 15px;
-      padding: 8px 0;
+      padding: 15px;
       border-bottom: 1px solid #333;
     }
 
@@ -176,102 +131,152 @@
     }
 
     .info-label {
-      color: #999;
+      color: #888;
     }
 
     .info-value {
       font-weight: bold;
       text-align: right;
-      word-break: break-word;
     }
 
-    .hidden {
-      display: none !important;
+    #nextButton {
+      width: 100%;
+      margin-top: 20px;
+      padding: 16px;
+      border: none;
+      border-radius: 10px;
+      background: white;
+      color: black;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
     }
+
+    .error-text {
+      color: #ff7777;
+    }
+
   </style>
+
 </head>
+
 
 <body>
 
 <div class="container">
 
-  <h1>MAROONED ACTOR SOCIETY</h1>
-  <div class="subtitle">FTJ 2026 — Ticket Scanner</div>
+  <h1>SHIFT 4</h1>
 
-  <!-- =========================
-       SCANNER
-  ========================= -->
+  <div class="subtitle">
+    Ticket Scanner
+  </div>
+
 
   <div id="scannerSection">
 
     <div id="reader"></div>
 
-    <button id="startButton" onclick="startScanner()">
+    <button
+      id="startButton">
       📷 BUKA KAMERA
     </button>
 
     <div id="status">
-      Scanner siap.
+      Tekan tombol untuk membuka kamera.
     </div>
 
   </div>
 
-
-  <!-- =========================
-       PROCESSING
-  ========================= -->
 
   <div id="processing">
 
     <div class="spinner"></div>
 
-    <div class="processing-title">
+    <div>
       MEMPROSES TIKET...
-    </div>
-
-    <div class="processing-subtitle">
-      Mohon tunggu sebentar
     </div>
 
   </div>
 
 
-  <!-- =========================
-       RESULT
-  ========================= -->
-
   <div id="result">
 
-    <div id="resultIcon"></div>
+    <div
+      id="resultIcon"
+      class="result-icon">
+    </div>
 
-    <div id="resultTitle"></div>
+    <div
+      id="resultTitle"
+      class="result-title">
+    </div>
 
-    <div class="ticket-info">
+
+    <div
+      id="ticketInfo"
+      class="ticket-info">
 
       <div class="info-row">
-        <span class="info-label">Ticket ID</span>
-        <span class="info-value" id="ticketId">-</span>
+
+        <div class="info-label">
+          Nama
+        </div>
+
+        <div
+          id="infoName"
+          class="info-value">
+        </div>
+
       </div>
 
-      <div class="info-row">
-        <span class="info-label">Nama</span>
-        <span class="info-value" id="ticketName">-</span>
-      </div>
 
       <div class="info-row">
-        <span class="info-label">Jenis Tiket</span>
-        <span class="info-value" id="ticketType">-</span>
+
+        <div class="info-label">
+          Warna
+        </div>
+
+        <div
+          id="infoColor"
+          class="info-value">
+        </div>
+
       </div>
 
+
       <div class="info-row">
-        <span class="info-label">Check-in</span>
-        <span class="info-value" id="checkInTime">-</span>
+
+        <div class="info-label">
+          Jumlah
+        </div>
+
+        <div
+          id="infoQuantity"
+          class="info-value">
+        </div>
+
+      </div>
+
+
+      <div class="info-row">
+
+        <div class="info-label">
+          Waktu
+        </div>
+
+        <div
+          id="infoTime"
+          class="info-value">
+        </div>
+
       </div>
 
     </div>
 
-    <button id="scanAgainButton" onclick="scanAgain()">
-      📷 SCAN TIKET BERIKUTNYA
+
+    <button
+      id="nextButton">
+      SCAN TIKET BERIKUTNYA
     </button>
 
   </div>
@@ -281,253 +286,375 @@
 
 <script>
 
+/* =========================================
+   APPS SCRIPT URL
+========================================= */
+
 const APPS_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbzWD-Ei55rspe66t7yZdTSuW0TygdqvhBm_z8fUFzK6BskXMByU0Md6Us5emQ8eHoYPmQ/exec";
-
-let html5QrCode = null;
-let processingScan = false;
+  "GANTI_DENGAN_URL_APPS_SCRIPT_EXEC";
 
 
-/* =========================
-   START SCANNER
-========================= */
+/* =========================================
+   VARIABLES
+========================================= */
 
-function startScanner() {
+let scanner = null;
 
-  if (processingScan) {
+let scannerRunning = false;
+
+let processing = false;
+
+
+/* =========================================
+   START BUTTON
+========================================= */
+
+document
+  .getElementById("startButton")
+  .addEventListener(
+    "click",
+    startScanner
+  );
+
+
+async function startScanner() {
+
+  if (scannerRunning) {
     return;
   }
 
-  if (typeof Html5Qrcode === "undefined") {
 
-    document.getElementById("status").textContent =
-      "❌ Library scanner gagal dimuat.";
+  /*
+   * Kamera hanya boleh diakses dari
+   * HTTPS / localhost.
+   */
+
+  if (
+    location.protocol !== "https:" &&
+    location.hostname !== "localhost"
+  ) {
+
+    showStatus(
+      "Scanner harus dibuka melalui HTTPS."
+    );
 
     return;
   }
 
-  if (!window.isSecureContext) {
 
-    document.getElementById("status").textContent =
-      "❌ Scanner harus dibuka melalui HTTPS.";
+  document
+    .getElementById("startButton")
+    .disabled = true;
 
-    return;
-  }
 
-  document.getElementById("status").textContent =
-    "Mengaktifkan kamera...";
+  showStatus(
+    "Meminta izin kamera..."
+  );
 
-  document.getElementById("startButton").disabled = true;
 
-  html5QrCode = new Html5Qrcode("reader");
+  try {
 
-  html5QrCode.start(
+    /*
+     * Explicit permission request.
+     * Ini membantu browser menampilkan
+     * permission prompt sebelum html5-qrcode.
+     */
 
-    {
-      facingMode: "environment"
-    },
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: {
+            ideal: "environment"
+          }
+        },
+        audio: false
+      });
 
-    {
-      fps: 10,
-      qrbox: {
-        width: 250,
-        height: 250
-      },
-      aspectRatio: 1.0
-    },
 
-    onScanSuccess,
+    /*
+     * Setelah permission berhasil,
+     * matikan stream sementara.
+     * html5-qrcode akan membuka kamera
+     * secara normal setelah ini.
+     */
 
-    onScanFailure
+    stream
+      .getTracks()
+      .forEach(track => track.stop());
 
-  ).then(function() {
 
-    document.getElementById("status").textContent =
-      "📷 Kamera aktif — arahkan ke QR tiket.";
+    await openHtml5Scanner();
 
-  }).catch(function(error) {
+  } catch (error) {
 
     console.error(error);
 
-    document.getElementById("status").textContent =
-      "❌ Kamera gagal dibuka: " + error;
+    document
+      .getElementById("startButton")
+      .disabled = false;
 
-    document.getElementById("startButton").disabled = false;
 
-  });
+    if (
+      error.name ===
+      "NotAllowedError"
+    ) {
 
+      showStatus(
+        "Kamera ditolak browser. Izinkan Camera untuk situs ini, lalu refresh halaman."
+      );
+
+    } else if (
+      error.name ===
+      "NotFoundError"
+    ) {
+
+      showStatus(
+        "Kamera tidak ditemukan di perangkat."
+      );
+
+    } else if (
+      error.name ===
+      "NotReadableError"
+    ) {
+
+      showStatus(
+        "Kamera sedang digunakan aplikasi lain."
+      );
+
+    } else {
+
+      showStatus(
+        "Kamera gagal dibuka: " +
+        error.name
+      );
+    }
+  }
 }
 
 
-/* =========================
-   QR SCAN SUCCESS
-========================= */
+/* =========================================
+   OPEN HTML5 QR
+========================================= */
 
-function onScanSuccess(decodedText, decodedResult) {
+async function openHtml5Scanner() {
 
-  if (processingScan) {
+  scanner =
+    new Html5Qrcode("reader");
+
+
+  try {
+
+    await scanner.start(
+
+      {
+        facingMode: "environment"
+      },
+
+      {
+        fps: 10,
+
+        qrbox: {
+          width: 280,
+          height: 280
+        },
+
+        aspectRatio: 1.0
+      },
+
+      onScanSuccess,
+
+      () => {
+        // Jangan tampilkan error
+        // setiap frame yang belum terbaca.
+      }
+
+    );
+
+
+    scannerRunning = true;
+
+    showStatus(
+      "Arahkan kamera ke QR tiket."
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    document
+      .getElementById("startButton")
+      .disabled = false;
+
+    showStatus(
+      "Kamera gagal dimulai."
+    );
+  }
+}
+
+
+/* =========================================
+   QR BERHASIL TERBACA
+========================================= */
+
+async function onScanSuccess(decodedText) {
+
+  if (processing) {
     return;
   }
 
-  processingScan = true;
+  processing = true;
+
 
   /*
-   * LANGSUNG sembunyikan scanner.
-   * Tidak ada popup.
-   * Tidak ada tombol kamera.
+   * Hentikan scanner segera supaya
+   * QR yang sama tidak terbaca berkali-kali.
    */
 
-  document.getElementById("scannerSection")
-    .classList.add("hidden");
+  await stopScanner();
 
-  document.getElementById("processing")
+
+  document
+    .getElementById("scannerSection")
+    .style.display = "none";
+
+
+  document
+    .getElementById("processing")
     .style.display = "block";
 
 
-  stopScanner()
-    .then(function() {
+  /*
+   * Kirim ke Apps Script via JSONP.
+   */
 
-      sendTokenToAppsScript(decodedText);
-
-    })
-    .catch(function() {
-
-      sendTokenToAppsScript(decodedText);
-
-    });
-
+  checkTicket(decodedText);
 }
 
 
-/* =========================
-   SCAN FAILURE
-========================= */
+/* =========================================
+   STOP SCANNER
+========================================= */
 
-function onScanFailure(error) {
-  // Sengaja kosong.
-}
+async function stopScanner() {
 
-
-/* =========================
-   STOP CAMERA
-========================= */
-
-function stopScanner() {
-
-  if (!html5QrCode) {
-    return Promise.resolve();
+  if (!scanner) {
+    return;
   }
 
-  return html5QrCode.stop()
-    .then(function() {
 
-      html5QrCode.clear();
-      html5QrCode = null;
+  try {
 
-    })
-    .catch(function(error) {
+    if (scannerRunning) {
+      await scanner.stop();
+    }
 
-      console.warn("Scanner stop:", error);
+  } catch (error) {
 
-      html5QrCode = null;
+    console.warn(
+      "Scanner stop:",
+      error
+    );
 
-    });
+  }
 
+
+  try {
+    await scanner.clear();
+  } catch (error) {}
+
+
+  scanner = null;
+  scannerRunning = false;
 }
 
 
-/* =========================
-   SEND TOKEN TO APPS SCRIPT
-========================= */
+/* =========================================
+   CHECK TICKET JSONP
+========================================= */
 
-function sendTokenToAppsScript(token) {
+function checkTicket(token) {
 
   const callbackName =
-    "checkInCallback_" + Date.now();
+    "ticketCallback_" +
+    Date.now();
+
+
+  window[callbackName] =
+    function(result) {
+
+      delete window[callbackName];
+
+      handleServerResult(result);
+    };
+
 
   const script =
     document.createElement("script");
 
-  const timeout =
-    setTimeout(function() {
 
-      cleanup();
-
-      showError(
-        "GAGAL TERHUBUNG",
-        "Scanner tidak dapat menghubungi server."
-      );
-
-    }, 10000);
-
-
-  window[callbackName] = function(result) {
-
-    clearTimeout(timeout);
-
-    cleanup();
-
-    handleServerResult(result);
-
-  };
-
-
-  function cleanup() {
-
-    if (script.parentNode) {
-      script.parentNode.removeChild(script);
-    }
-
-    delete window[callbackName];
-
-  }
-
-
-  script.onerror = function() {
-
-    clearTimeout(timeout);
-
-    cleanup();
-
-    showError(
-      "GAGAL TERHUBUNG",
-      "Server tidak dapat dihubungi."
-    );
-
-  };
-
-
-  script.src =
+  const url =
     APPS_SCRIPT_URL +
     "?action=checkin" +
     "&token=" +
     encodeURIComponent(token) +
     "&callback=" +
-    encodeURIComponent(callbackName) +
+    callbackName +
     "&_=" +
     Date.now();
 
 
-  document.body.appendChild(script);
+  script.src = url;
 
+
+  script.onerror = function() {
+
+    delete window[callbackName];
+
+    handleServerError(
+      "Server tidak dapat dihubungi."
+    );
+  };
+
+
+  document
+    .body
+    .appendChild(script);
+
+
+  /*
+   * Timeout.
+   */
+
+  setTimeout(() => {
+
+    if (window[callbackName]) {
+
+      delete window[callbackName];
+
+      handleServerError(
+        "Server tidak merespons."
+      );
+    }
+
+  }, 15000);
 }
 
 
-/* =========================
+/* =========================================
    SERVER RESULT
-========================= */
+========================================= */
 
 function handleServerResult(result) {
 
-  if (!result) {
+  document
+    .getElementById("processing")
+    .style.display = "none";
 
-    showError(
-      "GAGAL TERHUBUNG",
-      "Server memberikan respons kosong."
-    );
 
-    return;
-  }
+  document
+    .getElementById("result")
+    .style.display = "block";
 
 
   if (result.success) {
@@ -540,7 +667,7 @@ function handleServerResult(result) {
 
   if (result.alreadyCheckedIn) {
 
-    showWarning(result);
+    showAlreadyUsed(result);
 
     return;
   }
@@ -548,182 +675,257 @@ function handleServerResult(result) {
 
   if (result.notFound) {
 
-    showError(
-      "TIKET TIDAK VALID",
-      result.message || "QR tidak terdaftar."
-    );
+    showInvalid(result);
 
     return;
   }
 
 
-  showError(
-    "GAGAL MEMPROSES",
-    result.message || "Terjadi kesalahan."
+  showErrorResult(
+    result.message ||
+    "Terjadi kesalahan."
   );
-
 }
 
 
-/* =========================
+/* =========================================
    SUCCESS
-========================= */
+========================================= */
 
 function showSuccess(result) {
 
-  document.getElementById("processing")
-    .style.display = "none";
+  document
+    .getElementById("resultIcon")
+    .textContent = "✓";
 
-  document.getElementById("result")
-    .style.display = "block";
 
-  document.getElementById("resultIcon").textContent =
-    "✅";
+  document
+    .getElementById("resultTitle")
+    .textContent =
+      "TIKET TERKONFIRMASI";
 
-  document.getElementById("resultTitle").textContent =
-    "TIKET TERKONFIRMASI";
 
-  document.getElementById("resultTitle").className =
-    "success";
-
-  fillTicketInfo(result);
+  fillInfo(result);
 
 }
 
 
-/* =========================
-   ALREADY CHECKED IN
-========================= */
+/* =========================================
+   ALREADY USED
+========================================= */
 
-function showWarning(result) {
+function showAlreadyUsed(result) {
 
-  document.getElementById("processing")
-    .style.display = "none";
+  document
+    .getElementById("resultIcon")
+    .textContent = "⚠";
 
-  document.getElementById("result")
-    .style.display = "block";
 
-  document.getElementById("resultIcon").textContent =
-    "⚠️";
+  document
+    .getElementById("resultTitle")
+    .textContent =
+      "TIKET SUDAH DIGUNAKAN";
 
-  document.getElementById("resultTitle").textContent =
-    "TIKET SUDAH DIGUNAKAN";
 
-  document.getElementById("resultTitle").className =
-    "warning";
-
-  fillTicketInfo(result);
+  fillInfo(result);
 
 }
 
 
-/* =========================
+/* =========================================
+   INVALID
+========================================= */
+
+function showInvalid(result) {
+
+  document
+    .getElementById("resultIcon")
+    .textContent = "✕";
+
+
+  document
+    .getElementById("resultTitle")
+    .textContent =
+      "TIKET TIDAK VALID";
+
+
+  document
+    .getElementById("ticketInfo")
+    .style.display = "none";
+}
+
+
+/* =========================================
    ERROR
-========================= */
+========================================= */
 
-function showError(title, message) {
+function showErrorResult(message) {
 
-  document.getElementById("processing")
+  document
+    .getElementById("resultIcon")
+    .textContent = "✕";
+
+
+  document
+    .getElementById("resultTitle")
+    .textContent =
+      message;
+
+
+  document
+    .getElementById("ticketInfo")
     .style.display = "none";
-
-  document.getElementById("result")
-    .style.display = "block";
-
-  document.getElementById("resultIcon").textContent =
-    "❌";
-
-  document.getElementById("resultTitle").textContent =
-    title;
-
-  document.getElementById("resultTitle").className =
-    "error";
-
-  document.getElementById("ticketId").textContent =
-    "-";
-
-  document.getElementById("ticketName").textContent =
-    message;
-
-  document.getElementById("ticketType").textContent =
-    "-";
-
-  document.getElementById("checkInTime").textContent =
-    "-";
-
 }
 
 
-/* =========================
-   FILL TICKET INFO
-========================= */
+/* =========================================
+   FILL INFO
+========================================= */
 
-function fillTicketInfo(result) {
+function fillInfo(result) {
 
-  document.getElementById("ticketId").textContent =
-    result.ticketId || "-";
-
-  document.getElementById("ticketName").textContent =
-    result.name || "-";
-
-  document.getElementById("ticketType").textContent =
-    result.ticketType || "-";
+  document
+    .getElementById("ticketInfo")
+    .style.display = "block";
 
 
-  if (result.checkInTime) {
+  document
+    .getElementById("infoName")
+    .textContent =
+      result.name || "-";
 
-    const date =
-      new Date(result.checkInTime);
 
-    if (!isNaN(date.getTime())) {
+  document
+    .getElementById("infoColor")
+    .textContent =
+      result.color || "-";
 
-      document.getElementById("checkInTime").textContent =
-        date.toLocaleString("id-ID");
 
-    } else {
+  document
+    .getElementById("infoQuantity")
+    .textContent =
+      result.quantity || "-";
 
-      document.getElementById("checkInTime").textContent =
-        result.checkInTime;
 
-    }
+  document
+    .getElementById("infoTime")
+    .textContent =
+      formatTime(result.checkInTime);
+}
 
-  } else {
 
-    document.getElementById("checkInTime").textContent =
-      "-";
+/* =========================================
+   FORMAT TIME
+========================================= */
 
+function formatTime(value) {
+
+  if (!value) {
+    return "-";
   }
 
+
+  const date =
+    new Date(value);
+
+
+  if (isNaN(date.getTime())) {
+    return value;
+  }
+
+
+  return date.toLocaleString(
+    "id-ID",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    }
+  );
 }
 
 
-/* =========================
-   SCAN AGAIN
-========================= */
+/* =========================================
+   NEXT SCAN
+========================================= */
 
-function scanAgain() {
+document
+  .getElementById("nextButton")
+  .addEventListener(
+    "click",
+    resetScanner
+  );
 
-  processingScan = false;
 
-  document.getElementById("result")
+async function resetScanner() {
+
+  processing = false;
+
+
+  document
+    .getElementById("result")
     .style.display = "none";
 
-  document.getElementById("processing")
+
+  document
+    .getElementById("ticketInfo")
+    .style.display = "block";
+
+
+  document
+    .getElementById("scannerSection")
+    .style.display = "block";
+
+
+  document
+    .getElementById("startButton")
+    .disabled = false;
+
+
+  document
+    .getElementById("status")
+    .textContent =
+      "Tekan tombol untuk membuka kamera.";
+}
+
+
+/* =========================================
+   STATUS
+========================================= */
+
+function showStatus(message) {
+
+  document
+    .getElementById("status")
+    .textContent =
+      message;
+}
+
+
+/* =========================================
+   SERVER ERROR
+========================================= */
+
+function handleServerError(message) {
+
+  document
+    .getElementById("processing")
     .style.display = "none";
 
-  document.getElementById("scannerSection")
-    .classList.remove("hidden");
 
-  document.getElementById("status").textContent =
-    "Scanner siap.";
+  document
+    .getElementById("result")
+    .style.display = "block";
 
-  document.getElementById("startButton").disabled =
-    false;
 
-  startScanner();
-
+  showErrorResult(message);
 }
 
 </script>
 
 </body>
+
 </html>
